@@ -1,6 +1,7 @@
 module CustomfizzbuzzSpec (main, spec) where
 
-import           Customfizzbuzz  (customfizzbuzz)
+import           Customfizzbuzz  (FizzbuzzSpec, FizzbuzzSpecPart,
+                                  customfizzbuzz)
 import           Data.List
 import           Test.Hspec
 import           Test.QuickCheck
@@ -14,7 +15,30 @@ spec =
         it "Each item is a number, or some combination of the words" $
             forAll specGenerator propPossibleWordsOrNumbers
 
-propPossibleWordsOrNumbers fizzbuzzspec = all (possibleWordOrNumber (possibleWords fizzbuzzspec)) (specToFizzbuzzes fizzbuzzspec)
+specGenerator :: Gen FizzbuzzSpec
+specGenerator = do
+    n <- choose (1, 5)
+    vectorOf n specPartGenerator
+
+specPartGenerator :: Gen FizzbuzzSpecPart
+specPartGenerator = do
+    i <- choose (0, length availableWords - 1)
+    j <- choose (0, length somePrimes - 1)
+    let thisWord = availableWords !! i
+    let thisPrime = somePrimes !! j
+    return (thisWord, thisPrime)
+
+availableWords :: [String]
+availableWords = ["Fizz", "Buzz", "Hiss", "Howl", "Foo", "Bar", "Baz", "Quux"]
+
+somePrimes :: [Int]
+somePrimes = [2, 3, 5, 7, 11, 13, 17, 23]
+
+propPossibleWordsOrNumbers :: FizzbuzzSpec -> Bool
+propPossibleWordsOrNumbers fizzbuzzspec =
+    all
+        (possibleWordOrNumber (possibleWords fizzbuzzspec))
+        (specToFizzbuzzes fizzbuzzspec)
 
 possibleWordOrNumber :: [String] -> String -> Bool
 possibleWordOrNumber possible str = (str `elem` possible) || isNumber str
@@ -24,7 +48,7 @@ isNumber str = case readMaybe str :: Maybe Int of
     Just _  -> True
     Nothing -> False
 
-possibleWords :: [(String, Int)] -> [String]
+possibleWords :: FizzbuzzSpec -> [String]
 possibleWords fizzbuzzspec = map concat allCombinations
     where len' = length fizzbuzzspec :: Int
           words' = map fst fizzbuzzspec :: [String]
@@ -37,24 +61,8 @@ combinations n lst = do
     rest   <- combinations (n-1) xs
     return $ x : rest
 
-specToFizzbuzzes :: [(String, Int)] -> [String]
-specToFizzbuzzes fizzbuzzspec = take (product (map snd fizzbuzzspec) * 3) (customfizzbuzz fizzbuzzspec)
-
-specGenerator :: Gen [(String, Int)]
-specGenerator = do
-    n <- choose (1, 5)
-    vectorOf n specPartGenerator
-
-availableWords :: [String]
-availableWords = ["Fizz", "Buzz", "Hiss", "Howl", "Foo", "Bar", "Baz", "Quux"]
-
-somePrimes :: [Int]
-somePrimes = [2, 3, 5, 7, 11, 13, 17, 23]
-
-specPartGenerator :: Gen (String, Int)
-specPartGenerator = do
-    i <- choose (0, length availableWords - 1)
-    j <- choose (0, length somePrimes - 1)
-    let thisWord = availableWords !! i
-    let thisPrime = somePrimes !! j
-    return (thisWord, thisPrime)
+specToFizzbuzzes :: FizzbuzzSpec -> [String]
+specToFizzbuzzes fizzbuzzspec =
+    take
+        (product (map snd fizzbuzzspec) * 3)
+        (customfizzbuzz fizzbuzzspec)
