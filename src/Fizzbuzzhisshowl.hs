@@ -1,17 +1,14 @@
 module Fizzbuzzhisshowl (fizzbuzzhisshowl) where
 
-fizzes = cycle ["", "", "Fizz"]
+specs = [("Fizz", 3), ("Buzz", 5), ("Hiss", 7), ("Howl", 11)]
 
-buzzes = cycle ["", "", "", "", "Buzz"]
-
-hisses = cycle ["", "", "", "", "", "", "Hiss"]
-
-howls = cycle ["", "", "", "", "", "", "", "", "", "", "Howl"]
-
-words' = zipWith (++) (zipWith (++) (zipWith (++) fizzes buzzes) hisses) howls
+words' = foldr (zipWith (++) . specToWordList) (repeat "") specs
 
 numbers = map show [1..]
 
 choice word num = if word == "" then num else word
 
 fizzbuzzhisshowl = zipWith choice words' numbers
+
+specToWordList :: (String, Int) -> [String]
+specToWordList (str, num) = cycle (replicate (num - 1) "" ++ [str])
