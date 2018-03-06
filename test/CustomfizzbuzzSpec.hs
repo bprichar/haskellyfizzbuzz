@@ -15,6 +15,9 @@ spec =
         it "Each item is a number, or some combination of the words" $
             forAll specGenerator propPossibleWordsOrNumbers
 
+        it "If item is a number, it is the position in the list" $
+            forAll specGenerator propIfNumberIsPosition
+
 specGenerator :: Gen FizzbuzzSpec
 specGenerator = do
     n <- choose (1, 5)
@@ -66,3 +69,10 @@ specToFizzbuzzes fizzbuzzspec =
     take
         (product (map snd fizzbuzzspec) * 3)
         (customfizzbuzz fizzbuzzspec)
+
+propIfNumberIsPosition :: FizzbuzzSpec -> Bool
+propIfNumberIsPosition fizzbuzzspec =
+    all ifNumberIsPosition (zip (specToFizzbuzzes fizzbuzzspec) [1..])
+
+ifNumberIsPosition :: (String, Int) -> Bool
+ifNumberIsPosition (str, pos) = not (isNumber str) || (show pos == str)
