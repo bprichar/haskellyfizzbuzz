@@ -1,6 +1,6 @@
 module Main where
 
-import           Fizzbuzzhisshowl (fizzbuzzhisshowl)
+import           Customfizzbuzz (customfizzbuzz)
 
 main :: IO ()
-main = mapM_ putStrLn $ take 100 fizzbuzzhisshowl
+main = mapM_ putStrLn $ take 100 (customfizzbuzz [("Fizz", 3), ("Buzz", 5)])
